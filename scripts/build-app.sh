@@ -34,6 +34,16 @@ if [ -d "$BUILD_DIR/PortKiller_PortKiller.bundle" ]; then
     cp -r "$BUILD_DIR/PortKiller_PortKiller.bundle" "$RESOURCES_DIR/"
 fi
 
+# Copy KeyboardShortcuts resource bundle (contains localizations)
+if [ -d "$BUILD_DIR/KeyboardShortcuts_KeyboardShortcuts.bundle" ]; then
+    cp -r "$BUILD_DIR/KeyboardShortcuts_KeyboardShortcuts.bundle" "$RESOURCES_DIR/"
+fi
+
+# Copy Defaults resource bundle (contains PrivacyInfo)
+if [ -d "$BUILD_DIR/Defaults_Defaults.bundle" ]; then
+    cp -r "$BUILD_DIR/Defaults_Defaults.bundle" "$RESOURCES_DIR/"
+fi
+
 # Download and copy Sparkle framework from official release (preserves symlinks)
 SPARKLE_VERSION="2.8.1"
 SPARKLE_CACHE="/tmp/Sparkle-${SPARKLE_VERSION}"
