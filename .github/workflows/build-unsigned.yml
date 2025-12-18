@@ -40,14 +40,17 @@ jobs:
 
       - name: Create ZIP
         run: |
+          ZIP_NAME="PortKiller-${GITHUB_REF_NAME}-universal-unsigned.zip"
           cd .build/release
-          zip -r ../../PortKiller-${GITHUB_REF_NAME}-universal-unsigned.zip PortKiller.app
+          zip -r "../../${ZIP_NAME}" PortKiller.app
           cd ../..
+          ls -lh "${ZIP_NAME}"
+          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: PortKiller-${{ github.ref_name }}-universal-unsigned.zip
+          files: ${{ env.ZIP_NAME }}
           body: |
             ## PortKiller ${{ github.ref_name }}
 
