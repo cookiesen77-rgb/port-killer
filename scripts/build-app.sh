@@ -11,9 +11,24 @@ CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 
+# Determine if we should build Universal Binary
+# If UNIVERSAL_BUILD=1 is set, build for both arm64 and x86_64
+if [ "${UNIVERSAL_BUILD:-0}" = "1" ]; then
+    echo "🏗️  Building Universal Binary (arm64 + x86_64)..."
+    BUILD_UNIVERSAL=true
+else
+    echo "🏗️  Building for current architecture..."
+    BUILD_UNIVERSAL=false
+fi
+
 # First build to fetch dependencies
 echo "🔨 Building release binary (fetching dependencies)..."
-swift build -c release
+if [ "$BUILD_UNIVERSAL" = true ]; then
+    # Build for arm64 first
+    swift build -c release --arch arm64
+else
+    swift build -c release
+fi
 
 # Patch the CHECKOUT source files directly (not DerivedSources which gets regenerated)
 # This patches the actual library code before the final build
@@ -122,7 +137,29 @@ rm -f .build/*/release/PortKiller
 rm -rf .build/*/release/*.bundle
 
 echo "🔨 Building release binary with patched sources..."
-swift build -c release
+if [ "$BUILD_UNIVERSAL" = true ]; then
+    # Build for both architectures
+    echo "  → Building for arm64..."
+    swift build -c release --arch arm64
+
+    echo "  → Building for x86_64..."
+    swift build -c release --arch x86_64
+
+    # Create universal binary using lipo
+    echo "  → Creating universal binary..."
+    ARM64_BINARY=".build/arm64-apple-macosx/release/$APP_NAME"
+    X86_64_BINARY=".build/x86_64-apple-macosx/release/$APP_NAME"
+    UNIVERSAL_BINARY="$BUILD_DIR/$APP_NAME"
+
+    mkdir -p "$BUILD_DIR"
+    lipo -create "$ARM64_BINARY" "$X86_64_BINARY" -output "$UNIVERSAL_BINARY"
+
+    # Copy resource bundles from arm64 build (they're architecture-independent)
+    echo "  → Copying resource bundles..."
+    cp -r .build/arm64-apple-macosx/release/*.bundle "$BUILD_DIR/" 2>/dev/null || true
+else
+    swift build -c release
+fi
 
 echo "📦 Creating app bundle..."
 rm -rf "$APP_DIR"

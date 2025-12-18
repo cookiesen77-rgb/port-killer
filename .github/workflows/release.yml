@@ -59,7 +59,8 @@ jobs:
         run: |
           # Clean any cached build to ensure patched accessors are used
           rm -rf .build/*/release/*.build/DerivedSources/resource_bundle_accessor.swift 2>/dev/null || true
-          ./scripts/build-app.sh
+          # Build Universal Binary for Intel and Apple Silicon
+          UNIVERSAL_BUILD=1 ./scripts/build-app.sh
 
       - name: Sign app with Developer ID
         env:
@@ -139,7 +140,7 @@ jobs:
         run: |
           APP_NAME="PortKiller"
           VERSION="${GITHUB_REF_NAME}"
-          DMG_NAME="${APP_NAME}-${VERSION}-arm64.dmg"
+          DMG_NAME="${APP_NAME}-${VERSION}-universal.dmg"
 
           # Create temporary directory for DMG contents
           mkdir -p dmg_contents
@@ -294,13 +295,12 @@ jobs:
             version "${VERSION}"
             sha256 "${SHA256}"
 
-            url "https://github.com/productdevbook/port-killer/releases/download/v#{version}/PortKiller-v#{version}-arm64.dmg"
+            url "https://github.com/productdevbook/port-killer/releases/download/v#{version}/PortKiller-v#{version}-universal.dmg"
             name "PortKiller"
             desc "Menu bar app to find and kill processes running on open ports"
             homepage "https://github.com/productdevbook/port-killer"
 
             depends_on macos: ">= :sequoia"
-            depends_on arch: :arm64
 
             app "PortKiller.app"
 

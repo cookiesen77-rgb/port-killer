@@ -9,11 +9,13 @@
   <a href="https://www.apple.com/macos/"><img src="https://img.shields.io/badge/macOS-15.0%2B-brightgreen" alt="macOS"></a>
   <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.2-orange" alt="Swift"></a>
   <a href="https://github.com/productdevbook/port-killer/releases"><img src="https://img.shields.io/github/v/release/productdevbook/port-killer" alt="GitHub Release"></a>
+  <img src="https://img.shields.io/badge/Platform-Intel%20%7C%20Apple%20Silicon-blue" alt="Platform">
 </p>
 
 <p align="center">
 A native macOS menu bar app for finding and killing processes on open ports.<br>
-Perfect for developers who need to quickly free up ports like 3000, 8080, 5173, etc.
+Perfect for developers who need to quickly free up ports like 3000, 8080, 5173, etc.<br>
+<strong>Universal Binary</strong> - supports both Intel and Apple Silicon Macs.
 </p>
 
 <p align="center">
