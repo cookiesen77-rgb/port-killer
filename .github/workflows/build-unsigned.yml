@@ -1,0 +1,68 @@
+name: Build Unsigned Universal Binary
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-unsigned:
+    name: Build Unsigned App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Update version in Info.plist
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          BUILD_NUMBER=$(git rev-list --count HEAD)
+          sed -i '' "s/<string>.*<\/string><!--VERSION-->/<string>${VERSION}<\/string><!--VERSION-->/" Resources/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" Resources/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${BUILD_NUMBER}" Resources/Info.plist
+          echo "Updated version to ${VERSION} (build ${BUILD_NUMBER})"
+
+      - name: Build Universal Binary
+        run: |
+          rm -rf .build/*/release/*.build/DerivedSources/resource_bundle_accessor.swift 2>/dev/null || true
+          UNIVERSAL_BUILD=1 ./scripts/build-app.sh
+
+      - name: Create ZIP
+        run: |
+          cd .build/release
+          zip -r ../../PortKiller-${GITHUB_REF_NAME}-universal-unsigned.zip PortKiller.app
+          cd ../..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: PortKiller-${{ github.ref_name }}-universal-unsigned.zip
+          body: |
+            ## PortKiller ${{ github.ref_name }}
+
+            **Universal Binary** - Supports Intel and Apple Silicon Macs
+
+            ⚠️ **Note:** This is an unsigned build for testing purposes.
+
+            ### Installation
+            1. Download the ZIP file
+            2. Extract `PortKiller.app`
+            3. Right-click and select "Open" (first time only)
+            4. Grant necessary permissions when prompted
+
+            ### Changes
+            - Universal Binary support (Intel + Apple Silicon)
+            - All original features preserved
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
